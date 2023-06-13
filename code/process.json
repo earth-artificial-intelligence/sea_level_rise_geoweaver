@@ -1,0 +1,25 @@
+[{
+  "id" : "bs1l0r",
+  "name" : "sea_level_utils",
+  "description" : null,
+  "code" : "import earthaccess\nfrom pprint import pprint\n\nauth = earthaccess.login(strategy=\"netrc\", persist=True)\n\n# We'll get 4 collections that match with our keywords\ncollections = earthaccess.collection_query().keyword(\"SEA SURFACE HEIGHT\").cloud_hosted(True).get(4)\n\n# Let's print 2 collections\nfor collection in collections[0:2]:\n    # pprint(collection.summary())\n    print(pprint(collection.summary()), collection.abstract(), \"\\n\", collection[\"umm\"][\"DOI\"], \"\\n\\n\")\n    \n\ngranules = earthaccess.granule_query().short_name(\"SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205\").temporal(\"2017-01\",\"2018-01\").get()\nprint(len(granules))\n\n# the collection is cloud hosted, but we can access it out of AWS with the regular HTTPS URL\ngranules[0].data_links(access=\"external\")\ngranules[0].data_links(access=\"direct\")",
+  "lang" : "python",
+  "owner" : "111111",
+  "confidential" : "FALSE"
+},{
+  "id" : "qeb9yn",
+  "name" : "xarray_earth_access",
+  "description" : null,
+  "code" : "import os\nimport xarray as xr\nimport matplotlib.pyplot as plt\nimport earthaccess\n\ngranules = []\nhome_dir = os.path.expanduser('~')\n\nauth = earthaccess.login(strategy=\"netrc\", persist=True)\n\n# we just grab 1 granule from May for each year of the dataset\nfor year in range(1990, 2019):\n    granule = earthaccess.granule_query().short_name(\"SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205\").temporal(f\"{year}-05\", f\"{year}-06\").get(1)\n    if len(granule)>0:\n        granules.append(granule[0])\nprint(f\"Total granules: {len(granules)}\")\n\nds = xr.open_mfdataset(earthaccess.open(granules), chunks={})\nplot = ds.SLA.where((ds.SLA>=0) & (ds.SLA < 10)).std('Time').plot(figsize=(14,6), x='Longitude', y='Latitude')\nhome_dir = os.path.expanduser('~')\nplot.figure.savefig(os.path.join(home_dir, 'sla_plot.png'))\n",
+  "lang" : "python",
+  "owner" : "111111",
+  "confidential" : "FALSE"
+},{
+  "id" : "x7coy2",
+  "name" : "plot_global_avg_sea_level",
+  "description" : null,
+  "code" : "import os\nimport numpy as np\nfrom pyproj import Geod\nfrom matplotlib import pyplot as plt\nimport earthaccess\nimport xarray as xr\n\nauth = earthaccess.login(strategy=\"netrc\", persist=True)\n\ngranules = []\n\nfor year in range(1990, 2019):\n    granule = earthaccess.granule_query().short_name(\"SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205\").temporal(f\"{year}-05\", f\"{year}-06\").get(1)\n    if len(granule)>0:\n        granules.append(granule[0])\nprint(f\"Total granules: {len(granules)}\")\n\ndef ssl_area(lats):\n    # Define WGS84 as CRS:\n    geod = Geod(ellps='WGS84')\n    dx=1/12.0\n    c_area=lambda lat: geod.polygon_area_perimeter(np.r_[-dx,dx,dx,-dx], lat+np.r_[-dx,-dx,dx,dx])[0]\n    out=[]\n    for lat in lats:\n        out.append(c_area(lat))\n    return np.array(out)\nds = xr.open_mfdataset(earthaccess.open(granules), chunks={})\n\nssh_area = ssl_area(ds.Latitude.data).reshape(-1,1)\nprint(ssh_area.shape)\n\nplt.rcParams[\"figure.figsize\"] = (16,4)\n\n# Create a blank image with the desired dimensions\nblank_img = np.ones((100, 100, 3))  # Adjust the dimensions as needed\n\nfig, axs = plt.subplots()\nplt.grid(True)\n\ndef global_mean(SLA, **kwargs):\n    dout=((SLA*ssh_area).sum()/(SLA/SLA*ssh_area).sum())*1000\n    return dout\n\nresult = ds.SLA.groupby('Time').apply(global_mean)\n\nplt.xlabel('Time (year)',fontsize=16)\nplt.ylabel('Global Mean SLA (meter)',fontsize=12)\n# axs.imshow(img, aspect='auto')\nplt.grid(True)\n\n\n\n#historic_ts=xr.open_dataset('https://opendap.jpl.nasa.gov/opendap/allData/homage/L4/gmsl/global_timeseries_measures.nc')\n\nresult.plot(ax=axs, color=\"orange\", marker=\"o\", label='satellite record')\n\n#historic_ts['global_average_sea_level_change'].plot(ax=axs, label='Historical in-situ record', color=\"lightblue\")\n\n# Use the blank image as the background\n#x0, x1 = axs.get_xlim()\n#y0, y1 = axs.get_ylim()\n# axs.imshow(blank_img, extent=[x0, x1, y0, y1], aspect='auto')\n\nplt.legend()\nhome_dir = os.path.expanduser('~')\nfig.figure.savefig(os.path.join(home_dir, 'global_sea_level_avg.png'))\nexit(0)\nprint('end of workflow run')\n",
+  "lang" : "python",
+  "owner" : "111111",
+  "confidential" : "FALSE"
+}]

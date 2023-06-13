@@ -1,0 +1,9 @@
+{
+  "id" : "96tqhttgag3b6wbi1fgb",
+  "name" : "Analyzing Sea Level Rise Using Earth Data in the Cloud",
+  "description" : "",
+  "owner" : "111111",
+  "confidential" : "FALSE",
+  "edges" : "[{\"source\":{\"title\":\"sea_level_utils\",\"id\":\"bs1l0r-A8HlU\",\"x\":571,\"y\":587.5,\"color\":\"green\"},\"target\":{\"title\":\"xarray_earth_access\",\"id\":\"qeb9yn-I560u\",\"x\":761,\"y\":585.5,\"color\":\"green\"}},{\"source\":{\"title\":\"xarray_earth_access\",\"id\":\"qeb9yn-I560u\",\"x\":761,\"y\":585.5,\"color\":\"green\"},\"target\":{\"title\":\"plot_global_avg_sea_level\",\"id\":\"x7coy2-FZrV7\",\"x\":1043.5,\"y\":583.5,\"color\":\"red\"}}]",
+  "nodes" : "[{\"title\":\"sea_level_utils\",\"id\":\"bs1l0r-A8HlU\",\"x\":571,\"y\":587.5,\"color\":\"green\"},{\"title\":\"xarray_earth_access\",\"id\":\"qeb9yn-I560u\",\"x\":761,\"y\":585.5,\"color\":\"green\"},{\"title\":\"plot_global_avg_sea_level\",\"id\":\"x7coy2-FZrV7\",\"x\":1043.5,\"y\":583.5,\"color\":\"red\"}]"
+}
